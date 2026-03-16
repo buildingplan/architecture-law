@@ -33,10 +33,11 @@
     .btn-green:hover { background: #27500A; }
     .notice { font-size: 12px; color: #aaa; margin-top: 8px; line-height: 1.6; }
     .hidden { display: none !important; }
-    .zone-banner { background: #f0f6ff; border-left: 3px solid #185FA5; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .zone-banner { background: #f0f6ff; border-left: 3px solid #185FA5; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; }
     .zone-label { font-size: 12px; color: #666; margin-bottom: 4px; }
     .zone-value { font-size: 20px; font-weight: 600; color: #1a1a1a; }
     .zone-meta { font-size: 12px; color: #888; margin-top: 4px; }
+    .zone-badge { display: inline-block; font-size: 11px; background: #E6F1FB; color: #185FA5; padding: 2px 8px; border-radius: 20px; margin-left: 8px; vertical-align: middle; }
     .section-title { font-size: 11px; font-weight: 600; color: #888; margin: 1.2rem 0 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; }
     .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
     .metric { background: #f8f8f6; border-radius: 8px; padding: 0.9rem; }
@@ -68,12 +69,7 @@
     .warn-box { background: #FFFBF0; border: 1px solid #FFE58F; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 1rem; font-size: 12px; color: #855B00; line-height: 1.6; }
     .error-box { background: #FFF0F0; border: 1px solid #FFB8B8; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.5rem; font-size: 13px; color: #A32D2D; }
     .loading-box { background: #F0F6FF; border: 1px solid #B5D4F4; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.5rem; font-size: 13px; color: #185FA5; }
-    .dot { display: inline-block; animation: bounce 1.2s infinite; }
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
     .footer { text-align: center; margin-top: 3rem; font-size: 12px; color: #bbb; line-height: 1.8; }
-    .jiyeok-badge { display: inline-block; font-size: 11px; background: #E6F1FB; color: #185FA5; padding: 2px 8px; border-radius: 20px; margin-left: 8px; vertical-align: middle; }
     @media (max-width: 480px) {
       .grid2, .result2-grid { grid-template-columns: 1fr; }
       .input-row { flex-direction: column; }
@@ -91,7 +87,6 @@
       <div class="header-sub">토지 지번을 입력하면 주요 건축 법규를 자동으로 분석합니다</div>
     </div>
 
-    <!-- STEP 1 입력 -->
     <div class="card">
       <div class="step-header">
         <div class="step-badge" id="badge1">1</div>
@@ -111,13 +106,12 @@
         </div>
       </div>
       <p class="notice">※ 지구단위계획 구역은 이 서비스에서 제외됩니다 (별도 검토 필요)<br>※ 현재 서울특별시 기준으로 제공됩니다</p>
-      <div id="search-status" class="hidden"></div>
+      <div id="search-status"></div>
     </div>
 
-    <!-- STEP 1 결과 -->
     <div id="result1" class="hidden">
       <div class="zone-banner">
-        <div class="zone-label">용도지역 <span class="jiyeok-badge" id="zone-source">실시간 조회</span></div>
+        <div class="zone-label">용도지역 <span class="zone-badge">실시간 조회</span></div>
         <div class="zone-value" id="zone-value">-</div>
         <div class="zone-meta" id="zone-meta">-</div>
       </div>
@@ -146,7 +140,6 @@
 
       <div class="divider"></div>
 
-      <!-- STEP 2 입력 -->
       <div class="card">
         <div class="step-header">
           <div class="step-badge" id="badge2">2</div>
@@ -173,7 +166,6 @@
         </div>
       </div>
 
-      <!-- STEP 2 결과 -->
       <div id="result2" class="hidden">
         <div class="section-title">세부 법규 결과</div>
         <div class="result2-grid">
@@ -237,7 +229,6 @@
   </div>
 
   <script>
-    // 용도지역별 법규 데이터
     const zoneData = {
       "제1종전용주거지역": { bcr:"50%", far:"100%", height:"8m 이하", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"ok"},{name:"공동주택 (아파트 제외)",key:"공동주택",status:"cond"},{name:"아파트",key:null,status:"no"},{name:"제1종 근린생활시설",key:"제1종근린",status:"cond"},{name:"제2종 근린생활시설",key:null,status:"no"},{name:"업무시설",key:null,status:"no"},{name:"숙박시설",key:null,status:"no"}]},
       "제2종전용주거지역": { bcr:"50%", far:"150%", height:"12m 이하", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"ok"},{name:"공동주택 (아파트 제외)",key:"공동주택",status:"ok"},{name:"아파트",key:null,status:"no"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"cond"},{name:"업무시설",key:null,status:"no"},{name:"숙박시설",key:null,status:"no"}]},
@@ -252,21 +243,10 @@
       "준공업지역": { bcr:"70%", far:"400%", height:"없음", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"cond"},{name:"공동주택",key:"공동주택",status:"cond"},{name:"아파트",key:null,status:"no"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"ok"},{name:"업무시설",key:"업무시설",status:"ok"},{name:"숙박시설",key:"숙박시설",status:"cond"}]},
     };
 
-    // 용도지역명 매핑 (API 반환값 → 표준명)
-    const zoneNameMap = {
-      "제1종전용주거지역":"제1종전용주거지역","제2종전용주거지역":"제2종전용주거지역",
-      "제1종일반주거지역":"제1종일반주거지역","제2종일반주거지역":"제2종일반주거지역",
-      "제3종일반주거지역":"제3종일반주거지역","준주거지역":"준주거지역",
-      "근린상업지역":"근린상업지역","일반상업지역":"일반상업지역",
-      "중심상업지역":"중심상업지역","유통상업지역":"유통상업지역",
-      "준공업지역":"준공업지역",
-    };
-
-    // 용도별 세부 법규
     const useDetails = {
-      "단독주택":  { landscape:(a)=>a>=200?"대지면적의 10%":"해당없음", landscapeSub:(a)=>a>=200?"연면적 200㎡ 이상":"연면적 200㎡ 미만", setback:"0.5m", setbackSub:"인접대지경계선", openspace:(a)=>"해당없음", openspaceSub:()=>"주거시설 미적용", openspaceNote:"주거시설 공개공지 미적용", parking:(a)=>Math.max(1,Math.ceil(a/50)), parkingRate:50, parkingUnit:"50㎡당 1대" },
-      "공동주택":  { landscape:(a)=>a>=300?"대지면적의 15%":"해당없음", landscapeSub:(a)=>a>=300?"연면적 300㎡ 이상":"연면적 300㎡ 미만", setback:"1m", setbackSub:"인접대지경계선", openspace:(a)=>"해당없음", openspaceSub:()=>"주거시설 미적용", openspaceNote:"주거시설 공개공지 미적용", parking:(a)=>Math.max(1,Math.ceil(a/75)), parkingRate:75, parkingUnit:"75㎡당 1대" },
-      "아파트":    { landscape:(a)=>"대지면적의 30%", landscapeSub:()=>"아파트 의무 조경", setback:"2m", setbackSub:"인접대지경계선", openspace:(a)=>"해당없음", openspaceSub:()=>"주거시설 미적용", openspaceNote:"주거시설 공개공지 미적용", parking:(a)=>Math.max(1,Math.ceil(a/75)), parkingRate:75, parkingUnit:"75㎡당 1대" },
+      "단독주택":  { landscape:(a)=>a>=200?"대지면적의 10%":"해당없음", landscapeSub:(a)=>a>=200?"연면적 200㎡ 이상":"연면적 200㎡ 미만", setback:"0.5m", setbackSub:"인접대지경계선", openspace:()=>"해당없음", openspaceSub:()=>"주거시설 미적용", openspaceNote:"주거시설 공개공지 미적용", parking:(a)=>Math.max(1,Math.ceil(a/50)), parkingRate:50, parkingUnit:"50㎡당 1대" },
+      "공동주택":  { landscape:(a)=>a>=300?"대지면적의 15%":"해당없음", landscapeSub:(a)=>a>=300?"연면적 300㎡ 이상":"연면적 300㎡ 미만", setback:"1m", setbackSub:"인접대지경계선", openspace:()=>"해당없음", openspaceSub:()=>"주거시설 미적용", openspaceNote:"주거시설 공개공지 미적용", parking:(a)=>Math.max(1,Math.ceil(a/75)), parkingRate:75, parkingUnit:"75㎡당 1대" },
+      "아파트":    { landscape:()=>"대지면적의 30%", landscapeSub:()=>"아파트 의무 조경", setback:"2m", setbackSub:"인접대지경계선", openspace:()=>"해당없음", openspaceSub:()=>"주거시설 미적용", openspaceNote:"주거시설 공개공지 미적용", parking:(a)=>Math.max(1,Math.ceil(a/75)), parkingRate:75, parkingUnit:"75㎡당 1대" },
       "제1종근린": { landscape:(a)=>a>=2000?"대지면적의 5%":"해당없음", landscapeSub:(a)=>a>=2000?"연면적 2,000㎡ 이상":"연면적 2,000㎡ 미만", setback:"1m", setbackSub:"인접대지경계선", openspace:(a)=>a>=5000?"대지면적의 10%":"해당없음", openspaceSub:(a)=>a>=5000?"연면적 5,000㎡ 이상":"연면적 5,000㎡ 미만", openspaceNote:"5,000㎡ 이상 시 의무", parking:(a)=>Math.max(1,Math.ceil(a/134)), parkingRate:134, parkingUnit:"134㎡당 1대" },
       "제2종근린": { landscape:(a)=>a>=2000?"대지면적의 5%":"해당없음", landscapeSub:(a)=>a>=2000?"연면적 2,000㎡ 이상":"연면적 2,000㎡ 미만", setback:"1m", setbackSub:"인접대지경계선", openspace:(a)=>a>=5000?"대지면적의 10%":"해당없음", openspaceSub:(a)=>a>=5000?"연면적 5,000㎡ 이상":"연면적 5,000㎡ 미만", openspaceNote:"5,000㎡ 이상 시 의무", parking:(a)=>Math.max(1,Math.ceil(a/134)), parkingRate:134, parkingUnit:"134㎡당 1대" },
       "업무시설":  { landscape:(a)=>a>=2000?"대지면적의 10%":"해당없음", landscapeSub:(a)=>a>=2000?"연면적 2,000㎡ 이상":"연면적 2,000㎡ 미만", setback:"1.5m", setbackSub:"인접대지경계선", openspace:(a)=>a>=5000?"대지면적의 10%":"해당없음", openspaceSub:(a)=>a>=5000?"연면적 5,000㎡ 이상":"연면적 5,000㎡ 미만", openspaceNote:"5,000㎡ 이상 시 의무", parking:(a)=>Math.max(1,Math.ceil(a/150)), parkingRate:150, parkingUnit:"150㎡당 1대" },
@@ -277,27 +257,22 @@
 
     function setStatus(msg, type) {
       const el = document.getElementById('search-status');
-      el.className = type === 'loading' ? 'loading-box' : type === 'error' ? 'error-box' : 'hidden';
+      if (type === 'hide') { el.className = 'hidden'; el.textContent = ''; return; }
+      el.className = type === 'loading' ? 'loading-box' : 'error-box';
       el.textContent = msg;
-      el.classList.remove('hidden');
     }
 
     function searchAddress() {
       const address = document.getElementById('address-input').value.trim();
       if (!address) { alert('주소를 입력해주세요.'); return; }
-
       document.getElementById('result1').classList.add('hidden');
       setStatus('주소 검색 중...', 'loading');
-
       const geocoder = new kakao.maps.services.Geocoder();
       geocoder.addressSearch(address, function(result, status) {
         if (status === kakao.maps.services.Status.OK) {
-          const lat = result[0].y;
-          const lng = result[0].x;
-          const addressName = result[0].address.address_name;
-          fetchLandUse(lat, lng, addressName);
+          fetchLandUse(result[0].y, result[0].x, result[0].address.address_name);
         } else {
-          setStatus('주소를 찾을 수 없습니다. 정확한 지번 주소를 입력해주세요.', 'error');
+          setStatus('주소를 찾을 수 없습니다. 시/도부터 전체 주소를 입력해주세요.', 'error');
         }
       });
     }
@@ -305,42 +280,31 @@
     async function fetchLandUse(lat, lng, addressName) {
       setStatus('용도지역 조회 중...', 'loading');
       try {
-        const API_KEY = 'A49ECECA-6A71-3D0E-9B94-68564F5E975F';
-        const url = `https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LT_C_UQ111&key=${API_KEY}&geometry=false&attribute=true&crs=EPSG:4326&bbox=${parseFloat(lng)-0.0005},${parseFloat(lat)-0.0005},${parseFloat(lng)+0.0005},${parseFloat(lat)+0.0005}&format=json&size=10`;
-
-        const response = await fetch(url);
+        const response = await fetch(`/api/land?lat=${lat}&lng=${lng}`);
         const data = await response.json();
-
-        if (data?.response?.status === 'OK' &&
-            data?.response?.result?.featureCollection?.features?.length > 0) {
-          const props = data.response.result.featureCollection.features[0].properties;
-          const zone = props.uname || props.prpos_area1_nm || props.ugb_nm || '';
-          if (zone.includes('지구단위') || zone.includes('특별계획')) {
+        if (data && data.zone) {
+          if (data.isJigudan) {
             setStatus('지구단위계획 구역입니다. 별도 검토가 필요합니다.', 'error');
             return;
           }
-          showStep1(zone, addressName, '실시간 조회');
+          showStep1(data.zone, addressName);
         } else {
-          setStatus('용도지역 정보를 가져오지 못했습니다. 주소를 확인해주세요.', 'error');
+          setStatus('용도지역 정보를 가져오지 못했습니다. 주소를 다시 확인해주세요.', 'error');
         }
       } catch (e) {
         setStatus('API 연결 오류: ' + e.message, 'error');
       }
     }
 
-    function showStep1(zone, address, source) {
-      const matchedZone = Object.keys(zoneNameMap).find(k => zone.includes(k)) || zone;
-      const d = zoneData[matchedZone];
-
+    function showStep1(zone, address) {
+      const d = zoneData[zone];
       if (!d) {
         setStatus(`'${zone}' 용도지역은 현재 서비스 범위 밖입니다. (지구단위계획 등 별도 검토 필요)`, 'error');
         return;
       }
-
-      document.getElementById('search-status').classList.add('hidden');
-      document.getElementById('zone-value').textContent = matchedZone;
+      setStatus('', 'hide');
+      document.getElementById('zone-value').textContent = zone;
       document.getElementById('zone-meta').textContent = address;
-      document.getElementById('zone-source').textContent = source || '실시간 조회';
       document.getElementById('bcr').textContent = d.bcr;
       document.getElementById('far').textContent = d.far;
       document.getElementById('height').textContent = d.height;
@@ -411,7 +375,6 @@
       document.getElementById('result2').scrollIntoView({ behavior:'smooth', block:'start' });
     }
 
-    // 엔터키로 검색
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('address-input').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') searchAddress();
