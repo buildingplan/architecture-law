@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>건축 법규 검토 — Plannit Group</title>
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dec29702450940a8c49b45e7e333719f&libraries=services"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif; background: #f5f5f3; color: #1a1a1a; min-height: 100vh; }
+    .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    .header { margin-bottom: 2rem; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+    .brand-name { font-size: 20px; font-weight: 600; color: #1a1a1a; }
+    .brand-group { font-size: 12px; color: #888; background: #eee; padding: 3px 10px; border-radius: 20px; }
+    .header-sub { font-size: 13px; color: #666; }
+    .card { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+    .step-badge { width: 26px; height: 26px; border-radius: 50%; background: #185FA5; color: #fff; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-badge.done { background: #3B6D11; }
+    .step-title { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+    .step-sub { font-size: 12px; color: #888; margin-top: 2px; }
+    .input-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+    .ig { flex: 1; min-width: 100px; }
+    .ig label { font-size: 12px; color: #666; margin-bottom: 6px; display: block; }
+    .ig input, .ig select { width: 100%; padding: 9px 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; outline: none; }
+    .ig input:focus, .ig select:focus { border-color: #185FA5; box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
+    .btn { padding: 9px 20px; font-size: 14px; font-weight: 500; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: #1a1a1a; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+    .btn:hover { background: #f5f5f5; }
+    .btn-primary { background: #185FA5; color: #fff; border-color: #185FA5; }
+    .btn-primary:hover { background: #0C447C; }
+    .btn-green { background: #3B6D11; color: #fff; border-color: #3B6D11; }
+    .btn-green:hover { background: #27500A; }
+    .notice { font-size: 12px; color: #aaa; margin-top: 8px; line-height: 1.6; }
+    .hidden { display: none !important; }
+    .zone-banner { background: #f0f6ff; border-left: 3px solid #185FA5; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .zone-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+    .zone-value { font-size: 20px; font-weight: 600; color: #1a1a1a; }
+    .zone-meta { font-size: 12px; color: #888; margin-top: 4px; }
+    .section-title { font-size: 11px; font-weight: 600; color: #888; margin: 1.2rem 0 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
+    .metric { background: #f8f8f6; border-radius: 8px; padding: 0.9rem; }
+    .metric-label { font-size: 11px; color: #888; margin-bottom: 5px; }
+    .metric-value { font-size: 22px; font-weight: 600; color: #1a1a1a; }
+    .metric-note { font-size: 11px; color: #aaa; margin-top: 3px; }
+    .usage-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+    .usage-row:last-child { border-bottom: none; }
+    .usage-name { font-size: 13px; color: #1a1a1a; }
+    .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+    .badge-ok { background: #EAF3DE; color: #3B6D11; }
+    .badge-cond { background: #FFF3DC; color: #854F0B; }
+    .badge-no { background: #FCEAEA; color: #A32D2D; }
+    .divider { height: 1px; background: #f0f0f0; margin: 1.25rem 0; }
+    .result2-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
+    .result2-metric { background: #f8f8f6; border-radius: 8px; padding: 0.9rem; }
+    .r2-label { font-size: 11px; color: #888; margin-bottom: 5px; }
+    .r2-value { font-size: 20px; font-weight: 600; color: #1a1a1a; }
+    .r2-sub { font-size: 11px; color: #888; margin-top: 3px; }
+    .r2-note { font-size: 11px; color: #aaa; margin-top: 3px; }
+    .parking-highlight { background: #EBF3FC; border-radius: 8px; padding: 1rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .parking-big { font-size: 32px; font-weight: 700; color: #0C447C; }
+    .parking-big span { font-size: 16px; color: #185FA5; font-weight: 500; }
+    .breakdown { border: 1px solid #e8e8e8; border-radius: 8px; overflow: hidden; }
+    .br-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .br-row:last-child { border-bottom: none; background: #f8f8f6; }
+    .br-label { color: #888; }
+    .br-value { color: #1a1a1a; font-weight: 500; }
+    .warn-box { background: #FFFBF0; border: 1px solid #FFE58F; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 1rem; font-size: 12px; color: #855B00; line-height: 1.6; }
+    .error-box { background: #FFF0F0; border: 1px solid #FFB8B8; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.5rem; font-size: 13px; color: #A32D2D; }
+    .loading-box { background: #F0F6FF; border: 1px solid #B5D4F4; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.5rem; font-size: 13px; color: #185FA5; }
+    .dot { display: inline-block; animation: bounce 1.2s infinite; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+    .footer { text-align: center; margin-top: 3rem; font-size: 12px; color: #bbb; line-height: 1.8; }
+    .jiyeok-badge { display: inline-block; font-size: 11px; background: #E6F1FB; color: #185FA5; padding: 2px 8px; border-radius: 20px; margin-left: 8px; vertical-align: middle; }
+    @media (max-width: 480px) {
+      .grid2, .result2-grid { grid-template-columns: 1fr; }
+      .input-row { flex-direction: column; }
+      .ig { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="header-top">
+        <div class="brand-name">건축 법규 검토</div>
+        <div class="brand-group">Plannit Group</div>
+      </div>
+      <div class="header-sub">토지 지번을 입력하면 주요 건축 법규를 자동으로 분석합니다</div>
+    </div>
+
+    <!-- STEP 1 입력 -->
+    <div class="card">
+      <div class="step-header">
+        <div class="step-badge" id="badge1">1</div>
+        <div>
+          <div class="step-title">토지 정보 입력</div>
+          <div class="step-sub">지번 주소를 입력하면 용도지역 및 허용 용도를 확인합니다</div>
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="ig" style="flex:2">
+          <label>지번 주소 (시/도 + 시/군/구 + 동/읍/면 + 번지)</label>
+          <input type="text" id="address-input" placeholder="예: 서울특별시 강남구 삼성동 123-4" />
+        </div>
+        <div>
+          <label style="font-size:12px;visibility:hidden;display:block;margin-bottom:6px;">조회</label>
+          <button class="btn btn-primary" onclick="searchAddress()">용도지역 조회</button>
+        </div>
+      </div>
+      <p class="notice">※ 지구단위계획 구역은 이 서비스에서 제외됩니다 (별도 검토 필요)<br>※ 현재 서울특별시 기준으로 제공됩니다</p>
+      <div id="search-status" class="hidden"></div>
+    </div>
+
+    <!-- STEP 1 결과 -->
+    <div id="result1" class="hidden">
+      <div class="zone-banner">
+        <div class="zone-label">용도지역 <span class="jiyeok-badge" id="zone-source">실시간 조회</span></div>
+        <div class="zone-value" id="zone-value">-</div>
+        <div class="zone-meta" id="zone-meta">-</div>
+      </div>
+
+      <div class="section-title">기본 건축 기준 (용도지역 기준)</div>
+      <div class="grid2">
+        <div class="metric">
+          <div class="metric-label">건폐율</div>
+          <div class="metric-value" id="bcr">-</div>
+          <div class="metric-note" id="bcr-note">-</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">용적률</div>
+          <div class="metric-value" id="far">-</div>
+          <div class="metric-note" id="far-note">-</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">높이 제한</div>
+          <div class="metric-value" id="height">-</div>
+          <div class="metric-note">사선 제한 별도 검토 필요</div>
+        </div>
+      </div>
+
+      <div class="section-title">개발 가능 용도</div>
+      <div class="card" style="padding:0.5rem 1rem;" id="uses-list"></div>
+
+      <div class="divider"></div>
+
+      <!-- STEP 2 입력 -->
+      <div class="card">
+        <div class="step-header">
+          <div class="step-badge" id="badge2">2</div>
+          <div>
+            <div class="step-title">계획 건물 정보 입력</div>
+            <div class="step-sub">용도와 연면적을 입력하면 세부 법규를 계산합니다</div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="ig" style="flex:1.5">
+            <label>계획 용도 (허용 용도만 선택 가능)</label>
+            <select id="plan-use" onchange="resetStep2()">
+              <option value="">용도를 선택하세요</option>
+            </select>
+          </div>
+          <div class="ig">
+            <label>계획 연면적 (㎡)</label>
+            <input type="number" id="plan-area" placeholder="예: 500" oninput="resetStep2Result()" />
+          </div>
+          <div>
+            <label style="font-size:12px;visibility:hidden;display:block;margin-bottom:6px;">계산</label>
+            <button class="btn btn-green" onclick="calcStep2()">세부 법규 계산</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 결과 -->
+      <div id="result2" class="hidden">
+        <div class="section-title">세부 법규 결과</div>
+        <div class="result2-grid">
+          <div class="result2-metric">
+            <div class="r2-label">조경 면적</div>
+            <div class="r2-value" id="r2-landscape">-</div>
+            <div class="r2-sub" id="r2-landscape-sub">-</div>
+            <div class="r2-note">건축법 42조 기준</div>
+          </div>
+          <div class="result2-metric">
+            <div class="r2-label">대지안의 공지</div>
+            <div class="r2-value" id="r2-setback">-</div>
+            <div class="r2-sub" id="r2-setback-sub">-</div>
+            <div class="r2-note">건축선·인접대지경계선 이격</div>
+          </div>
+          <div class="result2-metric">
+            <div class="r2-label">공개공지</div>
+            <div class="r2-value" id="r2-openspace">-</div>
+            <div class="r2-sub" id="r2-openspace-sub">-</div>
+            <div class="r2-note" id="r2-openspace-note">-</div>
+          </div>
+          <div class="result2-metric">
+            <div class="r2-label">주차대수</div>
+            <div class="r2-value" id="r2-parking">-</div>
+            <div class="r2-sub" id="r2-parking-sub">-</div>
+            <div class="r2-note">서울시 주차장 조례 기준</div>
+          </div>
+        </div>
+
+        <div class="section-title">주차대수 산출 근거</div>
+        <div class="parking-highlight">
+          <div>
+            <div style="font-size:12px;color:#185FA5;margin-bottom:4px;">필요 주차대수</div>
+            <div class="parking-big" id="parking-big">0 <span>대</span></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;color:#185FA5;margin-bottom:4px;">적용 기준</div>
+            <div style="font-size:13px;color:#0C447C;font-weight:600;" id="parking-standard">-</div>
+          </div>
+        </div>
+        <div class="breakdown">
+          <div class="br-row"><span class="br-label">계획 용도</span><span class="br-value" id="pb-use">-</span></div>
+          <div class="br-row"><span class="br-label">계획 연면적</span><span class="br-value" id="pb-area">-</span></div>
+          <div class="br-row"><span class="br-label">산정 기준</span><span class="br-value" id="pb-rate">-</span></div>
+          <div class="br-row"><span class="br-label">계산식</span><span class="br-value" id="pb-formula">-</span></div>
+          <div class="br-row"><span class="br-label" style="font-weight:600;color:#1a1a1a;">최소 확보 주차대수</span><span class="br-value" id="pb-total" style="font-size:15px;color:#185FA5;">-</span></div>
+        </div>
+
+        <div class="warn-box">
+          ※ 본 결과는 참고용이며, 실제 인허가 시 담당 지자체 확인이 필요합니다.<br>
+          지구단위계획·특별계획구역·문화재보호구역 등은 별도 검토가 필요합니다.<br>
+          현재 서울특별시 기준이며, 타 지자체 조례는 상이할 수 있습니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      건축 법규 검토 · Plannit Group<br>
+      문의: buildingplan.co.kr
+    </div>
+  </div>
+
+  <script>
+    // 용도지역별 법규 데이터
+    const zoneData = {
+      "제1종전용주거지역": { bcr:"50%", far:"100%", height:"8m 이하", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"ok"},{name:"공동주택 (아파트 제외)",key:"공동주택",status:"cond"},{name:"아파트",key:null,status:"no"},{name:"제1종 근린생활시설",key:"제1종근린",status:"cond"},{name:"제2종 근린생활시설",key:null,status:"no"},{name:"업무시설",key:null,status:"no"},{name:"숙박시설",key:null,status:"no"}]},
+      "제2종전용주거지역": { bcr:"50%", far:"150%", height:"12m 이하", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"ok"},{name:"공동주택 (아파트 제외)",key:"공동주택",status:"ok"},{name:"아파트",key:null,status:"no"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"cond"},{name:"업무시설",key:null,status:"no"},{name:"숙박시설",key:null,status:"no"}]},
+      "제1종일반주거지역": { bcr:"60%", far:"200%", height:"4층 이하", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"ok"},{name:"공동주택 (아파트 제외)",key:"공동주택",status:"ok"},{name:"아파트",key:null,status:"no"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"cond"},{name:"업무시설",key:null,status:"no"},{name:"숙박시설",key:null,status:"no"}]},
+      "제2종일반주거지역": { bcr:"60%", far:"200%", height:"없음", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"ok"},{name:"공동주택 (아파트 제외)",key:"공동주택",status:"ok"},{name:"아파트",key:null,status:"no"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"cond"},{name:"업무시설",key:null,status:"no"},{name:"숙박시설",key:null,status:"no"}]},
+      "제3종일반주거지역": { bcr:"50%", far:"250%", height:"없음", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"ok"},{name:"공동주택",key:"공동주택",status:"ok"},{name:"아파트",key:"아파트",status:"ok"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"ok"},{name:"업무시설",key:"업무시설",status:"cond"},{name:"숙박시설",key:null,status:"no"}]},
+      "준주거지역": { bcr:"70%", far:"400%", height:"없음", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"ok"},{name:"공동주택",key:"공동주택",status:"ok"},{name:"아파트",key:"아파트",status:"ok"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"ok"},{name:"업무시설",key:"업무시설",status:"ok"},{name:"숙박시설",key:"숙박시설",status:"cond"}]},
+      "근린상업지역": { bcr:"70%", far:"900%", height:"없음", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"cond"},{name:"공동주택",key:"공동주택",status:"cond"},{name:"아파트",key:"아파트",status:"cond"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"ok"},{name:"업무시설",key:"업무시설",status:"ok"},{name:"숙박시설",key:"숙박시설",status:"ok"}]},
+      "일반상업지역": { bcr:"80%", far:"1300%", height:"없음", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"cond"},{name:"공동주택",key:"공동주택",status:"cond"},{name:"아파트",key:"아파트",status:"cond"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"ok"},{name:"업무시설",key:"업무시설",status:"ok"},{name:"숙박시설",key:"숙박시설",status:"ok"}]},
+      "중심상업지역": { bcr:"90%", far:"1500%", height:"없음", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"cond"},{name:"공동주택",key:"공동주택",status:"cond"},{name:"아파트",key:"아파트",status:"cond"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"ok"},{name:"업무시설",key:"업무시설",status:"ok"},{name:"숙박시설",key:"숙박시설",status:"ok"}]},
+      "유통상업지역": { bcr:"80%", far:"1100%", height:"없음", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:null,status:"no"},{name:"공동주택",key:null,status:"no"},{name:"아파트",key:null,status:"no"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"ok"},{name:"업무시설",key:"업무시설",status:"ok"},{name:"숙박시설",key:"숙박시설",status:"ok"}]},
+      "준공업지역": { bcr:"70%", far:"400%", height:"없음", bcrNote:"국토계획법 시행령", farNote:"서울시 조례 기준", uses:[{name:"단독주택",key:"단독주택",status:"cond"},{name:"공동주택",key:"공동주택",status:"cond"},{name:"아파트",key:null,status:"no"},{name:"제1종 근린생활시설",key:"제1종근린",status:"ok"},{name:"제2종 근린생활시설",key:"제2종근린",status:"ok"},{name:"업무시설",key:"업무시설",status:"ok"},{name:"숙박시설",key:"숙박시설",status:"cond"}]},
+    };
+
+    // 용도지역명 매핑 (API 반환값 → 표준명)
+    const zoneNameMap = {
+      "제1종전용주거지역":"제1종전용주거지역","제2종전용주거지역":"제2종전용주거지역",
+      "제1종일반주거지역":"제1종일반주거지역","제2종일반주거지역":"제2종일반주거지역",
+      "제3종일반주거지역":"제3종일반주거지역","준주거지역":"준주거지역",
+      "근린상업지역":"근린상업지역","일반상업지역":"일반상업지역",
+      "중심상업지역":"중심상업지역","유통상업지역":"유통상업지역",
+      "준공업지역":"준공업지역",
+    };
+
+    // 용도별 세부 법규
+    const useDetails = {
+      "단독주택":  { landscape:(a)=>a>=200?"대지면적의 10%":"해당없음", landscapeSub:(a)=>a>=200?"연면적 200㎡ 이상":"연면적 200㎡ 미만", setback:"0.5m", setbackSub:"인접대지경계선", openspace:(a)=>"해당없음", openspaceSub:()=>"주거시설 미적용", openspaceNote:"주거시설 공개공지 미적용", parking:(a)=>Math.max(1,Math.ceil(a/50)), parkingRate:50, parkingUnit:"50㎡당 1대" },
+      "공동주택":  { landscape:(a)=>a>=300?"대지면적의 15%":"해당없음", landscapeSub:(a)=>a>=300?"연면적 300㎡ 이상":"연면적 300㎡ 미만", setback:"1m", setbackSub:"인접대지경계선", openspace:(a)=>"해당없음", openspaceSub:()=>"주거시설 미적용", openspaceNote:"주거시설 공개공지 미적용", parking:(a)=>Math.max(1,Math.ceil(a/75)), parkingRate:75, parkingUnit:"75㎡당 1대" },
+      "아파트":    { landscape:(a)=>"대지면적의 30%", landscapeSub:()=>"아파트 의무 조경", setback:"2m", setbackSub:"인접대지경계선", openspace:(a)=>"해당없음", openspaceSub:()=>"주거시설 미적용", openspaceNote:"주거시설 공개공지 미적용", parking:(a)=>Math.max(1,Math.ceil(a/75)), parkingRate:75, parkingUnit:"75㎡당 1대" },
+      "제1종근린": { landscape:(a)=>a>=2000?"대지면적의 5%":"해당없음", landscapeSub:(a)=>a>=2000?"연면적 2,000㎡ 이상":"연면적 2,000㎡ 미만", setback:"1m", setbackSub:"인접대지경계선", openspace:(a)=>a>=5000?"대지면적의 10%":"해당없음", openspaceSub:(a)=>a>=5000?"연면적 5,000㎡ 이상":"연면적 5,000㎡ 미만", openspaceNote:"5,000㎡ 이상 시 의무", parking:(a)=>Math.max(1,Math.ceil(a/134)), parkingRate:134, parkingUnit:"134㎡당 1대" },
+      "제2종근린": { landscape:(a)=>a>=2000?"대지면적의 5%":"해당없음", landscapeSub:(a)=>a>=2000?"연면적 2,000㎡ 이상":"연면적 2,000㎡ 미만", setback:"1m", setbackSub:"인접대지경계선", openspace:(a)=>a>=5000?"대지면적의 10%":"해당없음", openspaceSub:(a)=>a>=5000?"연면적 5,000㎡ 이상":"연면적 5,000㎡ 미만", openspaceNote:"5,000㎡ 이상 시 의무", parking:(a)=>Math.max(1,Math.ceil(a/134)), parkingRate:134, parkingUnit:"134㎡당 1대" },
+      "업무시설":  { landscape:(a)=>a>=2000?"대지면적의 10%":"해당없음", landscapeSub:(a)=>a>=2000?"연면적 2,000㎡ 이상":"연면적 2,000㎡ 미만", setback:"1.5m", setbackSub:"인접대지경계선", openspace:(a)=>a>=5000?"대지면적의 10%":"해당없음", openspaceSub:(a)=>a>=5000?"연면적 5,000㎡ 이상":"연면적 5,000㎡ 미만", openspaceNote:"5,000㎡ 이상 시 의무", parking:(a)=>Math.max(1,Math.ceil(a/150)), parkingRate:150, parkingUnit:"150㎡당 1대" },
+      "숙박시설":  { landscape:(a)=>a>=2000?"대지면적의 5%":"해당없음", landscapeSub:(a)=>a>=2000?"연면적 2,000㎡ 이상":"연면적 2,000㎡ 미만", setback:"1.5m", setbackSub:"인접대지경계선", openspace:(a)=>a>=5000?"대지면적의 10%":"해당없음", openspaceSub:(a)=>a>=5000?"연면적 5,000㎡ 이상":"연면적 5,000㎡ 미만", openspaceNote:"5,000㎡ 이상 시 의무", parking:(a)=>Math.max(1,Math.ceil(a/134)), parkingRate:134, parkingUnit:"134㎡당 1대" },
+    };
+
+    const useDisplayNames = {"단독주택":"단독주택","공동주택":"공동주택","아파트":"아파트","제1종근린":"제1종 근린생활시설","제2종근린":"제2종 근린생활시설","업무시설":"업무시설","숙박시설":"숙박시설"};
+
+    function setStatus(msg, type) {
+      const el = document.getElementById('search-status');
+      el.className = type === 'loading' ? 'loading-box' : type === 'error' ? 'error-box' : 'hidden';
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function searchAddress() {
+      const address = document.getElementById('address-input').value.trim();
+      if (!address) { alert('주소를 입력해주세요.'); return; }
+
+      document.getElementById('result1').classList.add('hidden');
+      setStatus('주소 검색 중...', 'loading');
+
+      const geocoder = new kakao.maps.services.Geocoder();
+      geocoder.addressSearch(address, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          const lat = result[0].y;
+          const lng = result[0].x;
+          const addressName = result[0].address.address_name;
+          fetchLandUse(lat, lng, addressName);
+        } else {
+          setStatus('주소를 찾을 수 없습니다. 정확한 지번 주소를 입력해주세요.', 'error');
+        }
+      });
+    }
+
+    async function fetchLandUse(lat, lng, addressName) {
+      setStatus('용도지역 조회 중...', 'loading');
+
+      try {
+        // 좌표를 PNU 코드로 변환 후 토지이용규제 API 호출
+        const response = await fetch(`/api/land?lat=${lat}&lng=${lng}`);
+        const data = await response.json();
+
+        if (data && data.zone) {
+          showStep1(data.zone, addressName, '실시간 조회');
+        } else {
+          // API 결과 없으면 좌표 기반 fallback
+          setStatus('용도지역 정보를 가져오지 못했습니다. 주소를 확인해주세요.', 'error');
+        }
+      } catch (e) {
+        setStatus('API 연결 오류가 발생했습니다.', 'error');
+      }
+    }
+
+    function showStep1(zone, address, source) {
+      const matchedZone = Object.keys(zoneNameMap).find(k => zone.includes(k)) || zone;
+      const d = zoneData[matchedZone];
+
+      if (!d) {
+        setStatus(`'${zone}' 용도지역은 현재 서비스 범위 밖입니다. (지구단위계획 등 별도 검토 필요)`, 'error');
+        return;
+      }
+
+      document.getElementById('search-status').classList.add('hidden');
+      document.getElementById('zone-value').textContent = matchedZone;
+      document.getElementById('zone-meta').textContent = address;
+      document.getElementById('zone-source').textContent = source || '실시간 조회';
+      document.getElementById('bcr').textContent = d.bcr;
+      document.getElementById('far').textContent = d.far;
+      document.getElementById('height').textContent = d.height;
+      document.getElementById('bcr-note').textContent = d.bcrNote;
+      document.getElementById('far-note').textContent = d.farNote;
+
+      const list = document.getElementById('uses-list');
+      list.innerHTML = '';
+      const select = document.getElementById('plan-use');
+      select.innerHTML = '<option value="">용도를 선택하세요</option>';
+
+      d.uses.forEach(u => {
+        const row = document.createElement('div');
+        row.className = 'usage-row';
+        const bClass = u.status==='ok'?'badge-ok':u.status==='cond'?'badge-cond':'badge-no';
+        const bText = u.status==='ok'?'허용':u.status==='cond'?'조건부 허용':'불허';
+        row.innerHTML = `<span class="usage-name">${u.name}</span><span class="badge ${bClass}">${bText}</span>`;
+        list.appendChild(row);
+        if (u.key && (u.status==='ok'||u.status==='cond')) {
+          const opt = document.createElement('option');
+          opt.value = u.key;
+          opt.textContent = u.name + (u.status==='cond'?' (조건부)':'');
+          select.appendChild(opt);
+        }
+      });
+
+      document.getElementById('result2').classList.add('hidden');
+      const b1 = document.getElementById('badge1');
+      b1.className = 'step-badge done';
+      b1.textContent = '✓';
+      document.getElementById('result1').classList.remove('hidden');
+      document.getElementById('result1').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    function resetStep2() { document.getElementById('result2').classList.add('hidden'); }
+    function resetStep2Result() { document.getElementById('result2').classList.add('hidden'); }
+
+    function calcStep2() {
+      const useKey = document.getElementById('plan-use').value;
+      const area = parseFloat(document.getElementById('plan-area').value);
+      if (!useKey) { alert('계획 용도를 선택해주세요.'); return; }
+      if (!area || area <= 0) { alert('계획 연면적을 입력해주세요.'); return; }
+      const u = useDetails[useKey];
+      if (!u) return;
+      const parkingCount = u.parking(area);
+
+      document.getElementById('r2-landscape').textContent = u.landscape(area);
+      document.getElementById('r2-landscape-sub').textContent = u.landscapeSub(area);
+      document.getElementById('r2-setback').textContent = u.setback;
+      document.getElementById('r2-setback-sub').textContent = u.setbackSub;
+      document.getElementById('r2-openspace').textContent = u.openspace(area);
+      document.getElementById('r2-openspace-sub').textContent = u.openspaceSub(area);
+      document.getElementById('r2-openspace-note').textContent = u.openspaceNote;
+      document.getElementById('r2-parking').textContent = parkingCount + '대';
+      document.getElementById('r2-parking-sub').textContent = u.parkingUnit;
+      document.getElementById('parking-big').innerHTML = parkingCount + ' <span>대</span>';
+      document.getElementById('parking-standard').textContent = u.parkingUnit;
+      document.getElementById('pb-use').textContent = useDisplayNames[useKey] || useKey;
+      document.getElementById('pb-area').textContent = area.toLocaleString() + ' ㎡';
+      document.getElementById('pb-rate').textContent = u.parkingRate + '㎡당 1대';
+      document.getElementById('pb-formula').textContent = area.toLocaleString() + ' ÷ ' + u.parkingRate + ' = ' + parkingCount + '대';
+      document.getElementById('pb-total').textContent = parkingCount + ' 대';
+
+      const b2 = document.getElementById('badge2');
+      b2.className = 'step-badge done';
+      b2.textContent = '✓';
+      document.getElementById('result2').classList.remove('hidden');
+      document.getElementById('result2').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    // 엔터키로 검색
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('address-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') searchAddress();
+      });
+    });
+  </script>
+</body>
+</html>
