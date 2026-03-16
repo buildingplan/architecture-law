@@ -304,20 +304,27 @@
 
     async function fetchLandUse(lat, lng, addressName) {
       setStatus('용도지역 조회 중...', 'loading');
-
       try {
-        // 좌표를 PNU 코드로 변환 후 토지이용규제 API 호출
-        const response = await fetch(`/api/land?lat=${lat}&lng=${lng}`);
+        const API_KEY = 'A49ECECA-6A71-3D0E-9B94-68564F5E975F';
+        const url = `https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LT_C_UQ111&key=${API_KEY}&geometry=false&attribute=true&crs=EPSG:4326&bbox=${parseFloat(lng)-0.0005},${parseFloat(lat)-0.0005},${parseFloat(lng)+0.0005},${parseFloat(lat)+0.0005}&format=json&size=10`;
+
+        const response = await fetch(url);
         const data = await response.json();
 
-        if (data && data.zone) {
-          showStep1(data.zone, addressName, '실시간 조회');
+        if (data?.response?.status === 'OK' &&
+            data?.response?.result?.featureCollection?.features?.length > 0) {
+          const props = data.response.result.featureCollection.features[0].properties;
+          const zone = props.uname || props.prpos_area1_nm || props.ugb_nm || '';
+          if (zone.includes('지구단위') || zone.includes('특별계획')) {
+            setStatus('지구단위계획 구역입니다. 별도 검토가 필요합니다.', 'error');
+            return;
+          }
+          showStep1(zone, addressName, '실시간 조회');
         } else {
-          // API 결과 없으면 좌표 기반 fallback
           setStatus('용도지역 정보를 가져오지 못했습니다. 주소를 확인해주세요.', 'error');
         }
       } catch (e) {
-        setStatus('API 연결 오류가 발생했습니다.', 'error');
+        setStatus('API 연결 오류: ' + e.message, 'error');
       }
     }
 
