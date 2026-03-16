@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   const API_KEY = process.env.VWORLD_API_KEY;
 
   try {
-    const url = `https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LT_C_UQ111&key=${API_KEY}&geometry=false&attribute=true&filter=<Filter><Contains><PropertyName>the_geom</PropertyName><Point><coordinates>${lng},${lat}</coordinates></Point></Contains></Filter>&format=json&size=10`;
+    const url = `https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LT_C_UQ111&key=${API_KEY}&geometry=false&attribute=true&crs=EPSG:4326&bbox=${parseFloat(lng)-0.0005},${parseFloat(lat)-0.0005},${parseFloat(lng)+0.0005},${parseFloat(lat)+0.0005}&format=json&size=10`;
 
     const response = await fetch(url);
     const text = await response.text();
