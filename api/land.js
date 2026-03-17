@@ -9,6 +9,7 @@ export default async function handler(req, res) {
   const API_KEY = process.env.LAND_API_KEY;
 
   try {
+    // 1단계: 카카오 좌표 → 법정동코드
     const kakaoRes = await fetch(
       `https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=${lng}&y=${lat}`,
       { headers: { Authorization: 'KakaoAK 9d1f0f1648e8e28d3aa84af2c46d4c75' } }
@@ -22,14 +23,23 @@ export default async function handler(req, res) {
 
     const areaCd = region.code.substring(0, 5);
 
-    const landRes = await fetch(
-      `https://apis.data.go.kr/1613000/arLandUseInfoService/getLandUseInfo?serviceKey=${encodeURIComponent(API_KEY)}&areaCd=${areaCd}&numOfRows=10&pageNo=1&_type=json`
-    );
+    // 2단계: 토지이용규제 API - 올바른 엔드포인트
+    const encodedKey = encodeURIComponent(API_KEY);
+    const url = `https://apis.data.go.kr/1613000/arLandUseInfoService/getLandUseAttrList?serviceKey=${encodedKey}&areaCd=${areaCd}&numOfRows=1&pageNo=1&_type=json`;
+
+    const landRes = await fetch(url);
     const landText = await landRes.text();
 
     let landData;
     try { landData = JSON.parse(landText); }
-    catch(e) { return res.status(200).json({ zone: null, raw: landText.substring(0, 500) }); }
+    catch(e) {
+      return res.status(200).json({
+        zone: null,
+        raw: landText.substring(0, 500),
+        areaCd,
+        regionName: region.address_name
+      });
+    }
 
     return res.status(200).json({
       zone: null,
@@ -42,3 +52,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: error.message });
   }
 }
+```
+
+Commit 후 다시 아래 주소 열어주세요:
+```
+https://architecture-law.vercel.app/api/land?lat=37.5135&lng=127.0622
