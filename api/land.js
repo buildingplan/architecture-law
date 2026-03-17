@@ -6,46 +6,40 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: '좌표가 필요합니다' });
   }
 
-  const API_KEY = process.env.LAND_API_KEY;
-
   try {
-    // 1단계: 카카오 좌표 → 법정동코드
+    // 1단계: 카카오 좌표 → 법정동코드 + 지번
     const kakaoRes = await fetch(
-      `https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=${lng}&y=${lat}`,
+      `https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lng}&y=${lat}`,
       { headers: { Authorization: 'KakaoAK 9d1f0f1648e8e28d3aa84af2c46d4c75' } }
     );
     const kakaoData = await kakaoRes.json();
-    const region = kakaoData.documents?.find(d => d.region_type === 'B');
+    const addr = kakaoData.documents?.[0]?.address;
 
-    if (!region) {
-      return res.status(200).json({ zone: null, message: '법정동 코드를 찾을 수 없습니다' });
+    if (!addr) {
+      return res.status(200).json({ zone: null, message: '주소 변환 실패' });
     }
 
-    const areaCd = region.code.substring(0, 5);
+    const sigunguCd = addr.b_code.substring(0, 5);
+    const bjdongCd = addr.b_code.substring(5, 10);
+    const pnu = addr.b_code + (addr.mountain_yn === 'Y' ? '1' : '0') +
+                String(addr.main_address_no).padStart(4, '0') +
+                String(addr.sub_address_no || 0).padStart(4, '0');
 
-    // 2단계: 토지이용규제 API - 올바른 엔드포인트
-    const encodedKey = encodeURIComponent(API_KEY);
-    const url = `https://apis.data.go.kr/1613000/arLandUseInfoService/getLandUseAttrList?serviceKey=${encodedKey}&areaCd=${areaCd}&numOfRows=1&pageNo=1&_type=json`;
+    // 2단계: 토지이음 필지 용도지역 조회
+    const eumRes = await fetch(
+      `https://www.eum.go.kr/web/ar/lu/luLandDet.jsp?pnu=${pnu}`
+    );
+    const eumText = await eumRes.text();
 
-    const landRes = await fetch(url);
-    const landText = await landRes.text();
-
-    let landData;
-    try { landData = JSON.parse(landText); }
-    catch(e) {
-      return res.status(200).json({
-        zone: null,
-        raw: landText.substring(0, 500),
-        areaCd,
-        regionName: region.address_name
-      });
-    }
+    // 용도지역 추출
+    const zoneMatch = eumText.match(/용도지역[^가-힣]*([가-힣]+지역)/);
+    const zone = zoneMatch ? zoneMatch[1] : null;
 
     return res.status(200).json({
-      zone: null,
-      raw: landData,
-      areaCd,
-      regionName: region.address_name
+      zone,
+      pnu,
+      address: addr.address_name,
+      raw: eumText.substring(0, 1000)
     });
 
   } catch (error) {
@@ -54,6 +48,6 @@ export default async function handler(req, res) {
 }
 ```
 
-Commit 후 다시 아래 주소 열어주세요:
+Commit 후 다시 테스트해보세요!
 ```
 https://architecture-law.vercel.app/api/land?lat=37.5135&lng=127.0622
