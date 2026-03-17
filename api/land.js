@@ -1,4 +1,4 @@
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   const { lat, lng } = req.query;
@@ -9,7 +9,6 @@ module.exports = async function handler(req, res) {
   const API_KEY = process.env.LAND_API_KEY;
 
   try {
-    // 1단계: 카카오 좌표 → 법정동코드
     const kakaoRes = await fetch(
       `https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=${lng}&y=${lat}`,
       { headers: { Authorization: 'KakaoAK 9d1f0f1648e8e28d3aa84af2c46d4c75' } }
@@ -23,7 +22,6 @@ module.exports = async function handler(req, res) {
 
     const areaCd = region.code.substring(0, 5);
 
-    // 2단계: 토지이용규제 API
     const landRes = await fetch(
       `https://apis.data.go.kr/1613000/arLandUseInfoService/getLandUseInfo?serviceKey=${encodeURIComponent(API_KEY)}&areaCd=${areaCd}&numOfRows=10&pageNo=1&_type=json`
     );
