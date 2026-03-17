@@ -4,5 +4,6 @@
       "memory": 128,
       "maxDuration": 10
     }
-  }
+  },
+  "buildCommand": ""
 }
