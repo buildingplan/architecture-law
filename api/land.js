@@ -7,32 +7,33 @@ export default async function handler(req, res) {
   }
 
   const API_KEY = process.env.LAND_API_KEY;
-  const minLng = parseFloat(lng) - 0.0005;
-  const minLat = parseFloat(lat) - 0.0005;
-  const maxLng = parseFloat(lng) + 0.0005;
-  const maxLat = parseFloat(lat) + 0.0005;
 
   try {
-    const url = `http://apis.data.go.kr/1611000/nsdi/LandUseService/wfs/LandUseWFS?service=WFS&version=1.0.0&request=GetFeature&typeName=LandUse:LT_C_UQ111&srsName=EPSG:4326&bbox=${minLng},${minLat},${maxLng},${maxLat}&ServiceKey=${API_KEY}`;
-
-    const response = await fetch(url);
-    const text = await response.text();
-
-    // XML에서 용도지역명 추출
-    const match = text.match(/<LandUse:UNAME>([^<]+)<\/LandUse:UNAME>/) ||
-                  text.match(/<UNAME>([^<]+)<\/UNAME>/) ||
-                  text.match(/UNAME[^>]*>([^<]+)</);
-
-    if (match && match[1]) {
-      const zone = match[1].trim();
-      return res.status(200).json({
-        zone,
-        isJigudan: zone.includes('지구단위') || zone.includes('특별계획'),
-      });
+    // 1단계: 카카오 좌표→법정동코드 변환
+    const kakaoRes = await fetch(
+      `https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=${lng}&y=${lat}`,
+      { headers: { Authorization: 'KakaoAK 9d1f0f1648e8e28d3aa84af2c46d4c75' } }
+    );
+    const kakaoData = await kakaoRes.json();
+    const region = kakaoData.documents?.find(d => d.region_type === 'B');
+    if (!region) {
+      return res.status(200).json({ zone: null, message: '법정동 코드를 찾을 수 없습니다' });
     }
 
-    // 응답 원문 일부 반환 (디버깅용)
-    return res.status(200).json({ zone: null, raw: text.substring(0, 500) });
+    // 법정동코드 앞 5자리 = 시군구코드
+    const areaCd = region.code.substring(0, 5);
+
+    // 2단계: 토지이용규제 API 호출
+    const landRes = await fetch(
+      `https://apis.data.go.kr/1613000/arLandUseInfoService/getLandUseInfo?serviceKey=${API_KEY}&areaCd=${areaCd}&numOfRows=10&pageNo=1&_type=json`
+    );
+    const landText = await landRes.text();
+
+    let landData;
+    try { landData = JSON.parse(landText); }
+    catch(e) { return res.status(200).json({ zone: null, raw: landText.substring(0, 300) }); }
+
+    return res.status(200).json({ zone: null, raw: landData, areaCd, regionName: region.address_name });
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -40,6 +41,6 @@ export default async function handler(req, res) {
 }
 ```
 
-Commit 후 다시 API 주소 열어서 결과 보내주세요!
+Commit 후 아래 주소 열어서 결과 보내주세요:
 ```
 https://architecture-law.vercel.app/api/land?lat=37.5135&lng=127.0622
